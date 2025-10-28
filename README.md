@@ -201,7 +201,6 @@ Sistem başlatıldığında aşağıdaki örnek veriler yüklenir:
 
 **Toplam Gelir (Seed):** 4.550 TL
 
-## Geliştirme Notları
 
 ### OOP Prensipleri
 
