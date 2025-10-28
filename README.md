@@ -1,58 +1,225 @@
-# Otobüs Rezervasyon Sistemi 
+# Otobüs Rezervasyon Simülasyonu 🚌
 
-## 1. Projenin Amacı
-Otobüs rezervasyon sistemi; kullanıcıların otobüs seferleri için koltuk rezervasyonu yapmasını, rezervasyonları görüntülemesini ve yönetmesini sağlar. Sistem, nesneye yönelik programlama ilkelerine uygun şekilde tasarlanmıştır.
+Nesneye Yönelik Programlama (OOP) prensipleriyle geliştirilmiş, komut satırı tabanlı bir otobüs rezervasyon yönetim sistemi.
 
-## 2. Temel Sınıflar ve Özellikleri
+## 📋 İçindekiler
 
-### Bus (Otobüs)
-- Plaka (licensePlate)
-- Koltuk sayısı (seatCount)
-- Koltukların durumu (seats: dolu/boş)
-- Seferler (trips)
+- [Özellikler](#özellikler)
+- [Kurulum](#kurulum)
+- [Kullanım](#kullanım)
+- [Sistem Mimarisi](#sistem-mimarisi)
+- [Örnek Kullanım Senaryoları](#örnek-kullanım-senaryoları)
+- [Katkıda Bulunma](#katkıda-bulunma)
+- [Lisans](#lisans)
 
-### Trip (Sefer)
-- Sefer numarası (id)
-- Kalkış noktası (origin)
-- Varış noktası (destination)
-- Tarih/saat (date, time)
-- Otobüs (bus)
-- Rezervasyonlar (reservations)
+## Özellikler
 
-### User (Kullanıcı)
-- Kullanıcı ID (user_id)
-- Ad Soyad (name)
-- Telefon (phone)
-- E-posta (email)
-- Kullanıcının rezervasyonları (reservations)
+### Sefer Yönetimi
+- ✅ Yeni sefer oluşturma (kalkış-varış, tarih-saat, kapasite, fiyat)
+- ✅ Sefer listeleme ve detaylı görüntüleme
+- ✅ Dinamik bilet fiyatlandırma (sefer bazlı)
+- ✅ Gerçek zamanlı doluluk oranı takibi
 
-### Reservation (Rezervasyon)
-- Rezervasyon ID (reservation_id)
-- Kullanıcı (user)
-- Sefer (trip)
-- Koltuk numarası (seatNumber)
-- Rezervasyon tarihi (reservationDate)
+### Rezervasyon İşlemleri
+- ✅ Koltuk bazlı rezervasyon yapma
+- ✅ UUID tabanlı benzersiz rezervasyon ID'si
+- ✅ Rezervasyon iptal etme
+- ✅ Detaylı bilet fişi yazdırma
 
-## 3. Fonksiyonlar (Metotlar)
+### Raporlama ve Analiz
+- ✅ Tüm rezervasyonları listeleme
+- ✅ Sefer bazlı doluluk durumu
+- ✅ Gelir hesaplama ve raporlama
+- ✅ Boş/dolu koltuk görüntüleme
 
-- **Bus**
-  - boşKoltuklarıListele()
-  - seferEkle(trip)
+### Otomatik Test Verisi
+- 5 farklı sefer (farklı güzergahlar ve fiyatlar)
+- 10 örnek yolcu rezervasyonu
+- Otomatik bilet fişi oluşturma
+- Başlangıç raporu
 
-- **Trip**
-  - rezervasyonYap(user, seatNumber)
-  - rezervasyonlarıListele()
+## Kurulum
 
-- **User**
-  - rezervasyonYap(trip, seatNumber)
-  - rezervasyonlarıGörüntüle()
+### Gereksinimler
 
-- **Reservation**
-  - rezervasyonDetaylarınıGörüntüle()
+- Java JDK 8 veya üzeri
+- Komut satırı erişimi
 
-## 4. Senaryo Akışı
-1. Kullanıcı sisteme kaydolur.
-2. Admin otobüs ve seferleri ekler.
-3. Kullanıcı seferleri ve boş koltukları görüntüler.
-4. Kullanıcı koltuk seçip rezervasyon yapar.
-5. Kullanıcı rezervasyonlarını görüntüler.
+### Adımlar
+
+1. Projeyi klonlayın:
+
+```bash
+git clone https://github.com/kullaniciadi/otobus-rezervasyon.git
+cd otobus-rezervasyon
+```
+
+2. Java dosyasını derleyin:
+
+```bash
+javac Main.java
+```
+
+3. Programı çalıştırın:
+
+```bash
+java Main
+```
+
+## Kullanım
+
+Program başlatıldığında otomatik olarak örnek verilerle doldurulur ve ana menü görüntülenir:
+
+```
+=== Otobüs Rezervasyon Simülasyonu ===
+1) Yeni sefer oluştur
+2) Seferleri listele
+3) Sefer detaylarını göster
+4) Koltuk rezervasyonu yap
+5) Rezervasyon iptal et (Rezervation ID ile)
+6) Doluluk durumunu göster
+7) Tüm rezervasyonları listele
+8) Rapor: Toplam sefer sayısı ve gelir
+0) Çıkış
+```
+
+### Örnek İşlem Akışı
+
+#### 1. Sefer Listeleme
+
+```
+Seçiminiz: 2
+
+SFR1001 | İstanbul -> Ankara | Kalkış: 30/10/2025 09:00 | Kap: 10 | Dolu: 3 | Doluluk: 30.0% | Fiyat: 550 TL
+SFR1002 | İzmir -> Bursa | Kalkış: 29/10/2025 14:00 | Kap: 10 | Dolu: 2 | Doluluk: 20.0% | Fiyat: 450 TL
+...
+```
+
+#### 2. Rezervasyon Yapma
+
+```
+Seçiminiz: 4
+Sefer ID: SFR1001
+Sefer: SFR1001 (İstanbul → Ankara) | Bilet Fiyatı: 550 TL
+Koltuk numarası (1..10): 5
+Yolcu adı: Ayşe Yılmaz
+Telefon: 05551234567
+
+✅ Rezervasyon tamamlandı! RezID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+#### 3. Bilet Fişi
+
+```
+=====================================
+           BİLET FİŞİ / TICKET       
+=====================================
+Rezervasyon ID : a1b2c3d4-e5f6-7890-abcd-ef1234567890
+Yolcu          : Ayşe Yılmaz
+Telefon        : 05551234567
+Sefer ID       : SFR1001
+Güzergah       : İstanbul → Ankara
+Kalkış         : 30/10/2025 09:00
+Koltuk No      : 05
+Bilet Fiyatı   : 550 TL
+Rezervasyon Zamanı: 28/10/2025 15:30
+-------------------------------------
+NOT: Rezervasyon ID'nizi saklayınız.
+=====================================
+```
+
+## Sistem Mimarisi
+
+### Sınıf Yapısı
+
+```
+Main
+  └── ReservationSystem (Controller)
+        ├── Trip (Domain Model)
+        │     └── Seat (Domain Model)
+        └── CLI Interface
+```
+
+### Temel Sınıflar
+
+#### `Seat` (Koltuk)
+
+- Koltuk numarası, durum (boş/dolu)
+- Yolcu bilgileri (ad, telefon)
+- Rezervasyon zamanı ve benzersiz ID
+- Rezervasyon yapma/iptal metotları
+
+#### `Trip` (Sefer)
+
+- Sefer bilgileri (ID, güzergah, tarih-saat)
+- Kapasite ve fiyat yönetimi
+- Koltuk koleksiyonu (Map yapısı)
+- Doluluk oranı hesaplama
+- Rezervasyon ID ile koltuk bulma
+
+#### `ReservationSystem` (Ana Kontrol)
+
+- Sefer yönetimi (CRUD işlemleri)
+- CLI menü sistemi
+- Rezervasyon işlemleri
+- Raporlama ve analiz
+- Örnek veri oluşturma
+
+## Örnek Kullanım Senaryoları
+
+### Senaryo 1: Yeni Sefer Ekleme
+
+```java
+// Sistem otomatik olarak seed data ile başlar
+// Ancak yeni sefer eklemek için:
+// Menüden "1" seçeneği -> Sefer bilgilerini girin
+```
+
+### Senaryo 2: Doluluk Raporu Alma
+
+```java
+// Tüm seferler için: Menü -> 6 -> Enter
+// Belirli sefer için: Menü -> 6 -> Sefer ID girin
+```
+
+### Senaryo 3: Rezervasyon İptali
+
+```java
+// Menü -> 5 -> Rezervasyon ID'sini girin
+// Örnek: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+## Örnek Veri Yapısı
+
+Sistem başlatıldığında aşağıdaki örnek veriler yüklenir:
+
+| Sefer ID | Güzergah | Fiyat | Kapasite | Rezerve |
+|----------|----------|-------|----------|---------|
+| SFR1001 | İstanbul → Ankara | 550 TL | 10 | 3 |
+| SFR1002 | İzmir → Bursa | 450 TL | 10 | 2 |
+| SFR1003 | Antalya → Konya | 380 TL | 10 | 2 |
+| SFR1004 | Kırklareli → İstanbul | 290 TL | 10 | 2 |
+| SFR1005 | Trabzon → Samsun | 420 TL | 10 | 1 |
+
+**Toplam Gelir (Seed):** 4.550 TL
+
+## Geliştirme Notları
+
+### OOP Prensipleri
+
+- **Encapsulation:** Private field'lar ve public getter/setter metotları
+- **Single Responsibility:** Her sınıf tek bir sorumluluğa sahip
+- **Immutability:** Final field'lar değişmez veri yapıları için kullanılmış
+- **Optional:** Null kontrolü yerine `Optional<T>` kullanımı
+
+### Veri Yapıları
+
+- `LinkedHashMap<>` - Ekleme sırasını koruyan sefer/koltuk yönetimi
+- `UUID` - Benzersiz rezervasyon ID'leri
+- `LocalDateTime` - Modern tarih-saat yönetimi
+
+### Güvenlik
+
+- Input validation (kapasite, fiyat, tarih format kontrolü)
+- Duplicate ID kontrolü
+- Rezervasyon durumu kontrolü
