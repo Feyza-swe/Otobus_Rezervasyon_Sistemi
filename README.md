@@ -33,17 +33,7 @@ Otobüs rezervasyon sistemi; kullanıcıların otobüs seferleri için koltuk re
 - Koltuk numarası (seatNumber)
 - Rezervasyon tarihi (reservationDate)
 
-## 3. Sınıflar Arası İlişkiler ve Diyagram
-
-```mermaid
-classDiagram
-    User "1" -- "*" Reservation : yapar
-    Reservation "*" -- "1" Trip : ait
-    Trip "1" -- "1" Bus : kullanır
-    Bus "1" -- "*" Trip : seferleri vardır
-```
-
-## 4. Fonksiyonlar (Metotlar)
+## 3. Fonksiyonlar (Metotlar)
 
 - **Bus**
   - boşKoltuklarıListele()
@@ -60,10 +50,9 @@ classDiagram
 - **Reservation**
   - rezervasyonDetaylarınıGörüntüle()
 
-## 5. Senaryo Akışı
+## 4. Senaryo Akışı
 1. Kullanıcı sisteme kaydolur.
 2. Admin otobüs ve seferleri ekler.
 3. Kullanıcı seferleri ve boş koltukları görüntüler.
 4. Kullanıcı koltuk seçip rezervasyon yapar.
 5. Kullanıcı rezervasyonlarını görüntüler.
-
