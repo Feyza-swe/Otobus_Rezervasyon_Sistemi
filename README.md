@@ -2,7 +2,7 @@
 
 Nesneye Yönelik Programlama (OOP) prensipleriyle geliştirilmiş, komut satırı tabanlı bir otobüs rezervasyon yönetim sistemi.
 
-## 📋 İçindekiler
+##  İçindekiler
 
 - [Özellikler](#özellikler)
 - [Kurulum](#kurulum)
@@ -13,22 +13,22 @@ Nesneye Yönelik Programlama (OOP) prensipleriyle geliştirilmiş, komut satır�
 ## Özellikler
 
 ### Sefer Yönetimi
-- ✅ Yeni sefer oluşturma (kalkış-varış, tarih-saat, kapasite, fiyat)
-- ✅ Sefer listeleme ve detaylı görüntüleme
-- ✅ Dinamik bilet fiyatlandırma (sefer bazlı)
-- ✅ Gerçek zamanlı doluluk oranı takibi
+-  Yeni sefer oluşturma (kalkış-varış, tarih-saat, kapasite, fiyat)
+-  Sefer listeleme ve detaylı görüntüleme
+-  Dinamik bilet fiyatlandırma (sefer bazlı)
+-  Gerçek zamanlı doluluk oranı takibi
 
 ### Rezervasyon İşlemleri
-- ✅ Koltuk bazlı rezervasyon yapma
-- ✅ UUID tabanlı benzersiz rezervasyon ID'si
-- ✅ Rezervasyon iptal etme
-- ✅ Detaylı bilet fişi yazdırma
+-  Koltuk bazlı rezervasyon yapma
+-  UUID tabanlı benzersiz rezervasyon ID'si
+-  Rezervasyon iptal etme
+-  Detaylı bilet fişi yazdırma
 
 ### Raporlama ve Analiz
-- ✅ Tüm rezervasyonları listeleme
-- ✅ Sefer bazlı doluluk durumu
-- ✅ Gelir hesaplama ve raporlama
-- ✅ Boş/dolu koltuk görüntüleme
+-  Tüm rezervasyonları listeleme
+-  Sefer bazlı doluluk durumu
+-  Gelir hesaplama ve raporlama
+-  Boş/dolu koltuk görüntüleme
 
 ### Otomatik Test Verisi
 - 5 farklı sefer (farklı güzergahlar ve fiyatlar)
