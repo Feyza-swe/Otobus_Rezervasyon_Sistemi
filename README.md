@@ -9,8 +9,6 @@ Nesneye Yönelik Programlama (OOP) prensipleriyle geliştirilmiş, komut satır�
 - [Kullanım](#kullanım)
 - [Sistem Mimarisi](#sistem-mimarisi)
 - [Örnek Kullanım Senaryoları](#örnek-kullanım-senaryoları)
-- [Katkıda Bulunma](#katkıda-bulunma)
-- [Lisans](#lisans)
 
 ## Özellikler
 
