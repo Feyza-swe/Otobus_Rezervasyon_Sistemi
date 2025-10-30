@@ -12,175 +12,173 @@ import java.util.*;
  */
 public class Main {
     public static void main(String[] args) {
-        ReservationSystem system = new ReservationSystem();
-        system.seedSampleData(); // Örnek veriler: 5 sefer, 10 yolcu, rezervasyonlar + fişler
-        system.runCLI();         // CLI ile etkileşim
+        RezervasyonSistemi sistem = new RezervasyonSistemi();
+        sistem.ornekVerileriYukle(); // Örnek veriler: 5 sefer, 10 yolcu, rezervasyonlar + fişler
+        sistem.cliCalistir();         // CLI ile etkileşim
     }
 }
 
 /* -----------------------------
-    Domain Sınıfları (OOP)
+    Alan Sınıfları (OOP)
     ----------------------------- */
 
 /** Tek bir koltuğu temsil eder */
-class Seat {
-    private final int seatNumber; // 1..N
-    private boolean reserved;
-    private String passengerName;
-    private String passengerPhone;
-    private LocalDateTime reservationTime;
-    private String reservationId; // UUID ile benzersiz id
+class Koltuk {
+    private final int koltukNumarasi; // 1..N
+    private boolean rezerveEdildi;
+    private String yolcuAdi;
+    private String yolcuTelefonu;
+    private LocalDateTime rezervasyonZamani;
+    private String rezervasyonKimlik; // UUID ile benzersiz kimlik
 
-    public Seat(int seatNumber) {
-        this.seatNumber = seatNumber;
-        this.reserved = false;
+    public Koltuk(int koltukNumarasi) {
+        this.koltukNumarasi = koltukNumarasi;
+        this.rezerveEdildi = false;
     }
 
-    public int getSeatNumber() { return seatNumber; }
-    public boolean isReserved() { return reserved; }
-    public String getPassengerName() { return passengerName; }
-    public String getPassengerPhone() { return passengerPhone; }
-    public LocalDateTime getReservationTime() { return reservationTime; }
-    public String getReservationId() { return reservationId; }
+    public int getKoltukNumarasi() { return koltukNumarasi; }
+    public boolean isRezerveEdildi() { return rezerveEdildi; }
+    public String getYolcuAdi() { return yolcuAdi; }
+    public String getYolcuTelefonu() { return yolcuTelefonu; }
+    public LocalDateTime getRezervasyonZamani() { return rezervasyonZamani; }
+    public String getRezervasyonKimlik() { return rezervasyonKimlik; }
 
     /**
-     * Rezervasyon yapar. reservationId otomatik UUID olarak atanır.
+     * Rezervasyon yapar. rezervasyonKimlik otomatik UUID olarak atanır.
      */
-    public void reserve(String passengerName, String passengerPhone) {
-        if (this.reserved) return;
-        this.reserved = true;
-        this.passengerName = passengerName;
-        this.passengerPhone = passengerPhone;
-        this.reservationTime = LocalDateTime.now();
-        this.reservationId = UUID.randomUUID().toString();
+    public void rezerveEt(String yolcuAdi, String yolcuTelefonu) {
+        if (this.rezerveEdildi) return;
+        this.rezerveEdildi = true;
+        this.yolcuAdi = yolcuAdi;
+        this.yolcuTelefonu = yolcuTelefonu;
+        this.rezervasyonZamani = LocalDateTime.now();
+        this.rezervasyonKimlik = UUID.randomUUID().toString();
     }
 
     /**
      * Rezervasyon iptal eder.
      */
-    public void cancel() {
-        this.reserved = false;
-        this.passengerName = null;
-        this.passengerPhone = null;
-        this.reservationTime = null;
-        this.reservationId = null;
+    public void iptalEt() {
+        this.rezerveEdildi = false;
+        this.yolcuAdi = null;
+        this.yolcuTelefonu = null;
+        this.rezervasyonZamani = null;
+        this.rezervasyonKimlik = null;
     }
 }
 
-/** Bir sefer (trip) temsil eder */
-class Trip {
-    private final String tripId; // benzersiz sefer id
-    private final String origin;
-    private final String destination;
-    private final LocalDateTime departTime;
-    private final int capacity; // toplam koltuk sayısı
-    private final Map<Integer, Seat> seats; // seatNumber -> Seat
+/** Bir sefer temsil eder */
+class Sefer {
+    private final String seferKimlik; // benzersiz sefer kimliği
+    private final String kalkisYeri;
+    private final String varisYeri;
+    private final LocalDateTime kalkisZamani;
+    private final int kapasite; // toplam koltuk sayısı
+    private final Map<Integer, Koltuk> koltuklar; // koltukNumarasi -> Koltuk
 
     // Her sefer için farklı bilet fiyatı
-    private final int ticketPrice;
+    private final int biletFiyati;
 
-    // CONSTRUCTOR GÜNCELLENDİ: ticketPrice parametresi eklendi
-    public Trip(String tripId, String origin, String destination, LocalDateTime departTime, int capacity, int ticketPrice) {
-        if (capacity <= 0) throw new IllegalArgumentException("Kapasite pozitif olmalı.");
-        if (ticketPrice <= 0) throw new IllegalArgumentException("Bilet fiyatı pozitif olmalı.");
-        this.tripId = tripId;
-        this.origin = origin;
-        this.destination = destination;
-        this.departTime = departTime;
-        this.capacity = capacity;
-        this.ticketPrice = ticketPrice; // Artık farklı fiyatlar atanabilir
-        this.seats = new LinkedHashMap<>();
-        for (int i = 1; i <= capacity; i++) {
-            seats.put(i, new Seat(i));
+    public Sefer(String seferKimlik, String kalkisYeri, String varisYeri, LocalDateTime kalkisZamani, int kapasite, int biletFiyati) {
+        if (kapasite <= 0) throw new IllegalArgumentException("Kapasite pozitif olmalı.");
+        if (biletFiyati <= 0) throw new IllegalArgumentException("Bilet fiyatı pozitif olmalı.");
+        this.seferKimlik = seferKimlik;
+        this.kalkisYeri = kalkisYeri;
+        this.varisYeri = varisYeri;
+        this.kalkisZamani = kalkisZamani;
+        this.kapasite = kapasite;
+        this.biletFiyati = biletFiyati;
+        this.koltuklar = new LinkedHashMap<>();
+        for (int i = 1; i <= kapasite; i++) {
+            koltuklar.put(i, new Koltuk(i));
         }
     }
 
-    public String getTripId() { return tripId; }
-    public String getOrigin() { return origin; }
-    public String getDestination() { return destination; }
-    public LocalDateTime getDepartTime() { return departTime; }
-    public int getCapacity() { return capacity; }
-    public int getTicketPrice() { return ticketPrice; }
+    public String getSeferKimlik() { return seferKimlik; }
+    public String getKalkisYeri() { return kalkisYeri; }
+    public String getVarisYeri() { return varisYeri; }
+    public LocalDateTime getKalkisZamani() { return kalkisZamani; }
+    public int getKapasite() { return kapasite; }
+    public int getBiletFiyati() { return biletFiyati; }
 
-    public Optional<Seat> getSeat(int seatNumber) {
-        return Optional.ofNullable(seats.get(seatNumber));
+    public Optional<Koltuk> getKoltuk(int koltukNumarasi) {
+        return Optional.ofNullable(koltuklar.get(koltukNumarasi));
     }
 
-    public List<Seat> getAllSeats() {
-        return new ArrayList<>(seats.values());
+    public List<Koltuk> getTumKoltuklar() {
+        return new ArrayList<>(koltuklar.values());
     }
 
-    public List<Seat> getReservedSeats() {
-        List<Seat> r = new ArrayList<>();
-        for (Seat s : seats.values()) if (s.isReserved()) r.add(s);
-        return r;
+    public List<Koltuk> getRezerveKoltuklar() {
+        List<Koltuk> rezerveListesi = new ArrayList<>();
+        for (Koltuk k : koltuklar.values()) if (k.isRezerveEdildi()) rezerveListesi.add(k);
+        return rezerveListesi;
     }
 
-    public List<Seat> getAvailableSeats() {
-        List<Seat> a = new ArrayList<>();
-        for (Seat s : seats.values()) if (!s.isReserved()) a.add(s);
-        return a;
+    public List<Koltuk> getBosKoltuklar() {
+        List<Koltuk> boslar = new ArrayList<>();
+        for (Koltuk k : koltuklar.values()) if (!k.isRezerveEdildi()) boslar.add(k);
+        return boslar;
     }
 
-    public double getOccupancyRate() {
-        int reserved = getReservedSeats().size();
-        return (reserved / (double) capacity) * 100.0;
+    public double getDolulukOrani() {
+        int rezerve = getRezerveKoltuklar().size();
+        return (rezerve / (double) kapasite) * 100.0;
     }
 
-    public Optional<Seat> findSeatByReservationId(String reservationId) {
-        for (Seat s : seats.values()) {
-            if (s.isReserved() && reservationId.equals(s.getReservationId())) return Optional.of(s);
+    public Optional<Koltuk> rezervasyonKimlikIleKoltukBul(String rezervasyonKimlik) {
+        for (Koltuk k : koltuklar.values()) {
+            if (k.isRezerveEdildi() && rezervasyonKimlik.equals(k.getRezervasyonKimlik())) return Optional.of(k);
         }
         return Optional.empty();
     }
 
     /**
-     * Rezervasyon yapar ve rezervasyon yapılan Seat'i döner (null ise başarısız).
-     * Burada basit mantık: seatNumber geçerliyse ve boşsa rezervasyon yapılır.
+     * Rezervasyon yapar ve rezervasyon yapılan Koltuk'u döner (null ise başarısız).
      */
-    public Seat reserveSeatDirect(int seatNumber, String passengerName, String passengerPhone) {
-        Optional<Seat> maybe = getSeat(seatNumber);
-        if (!maybe.isPresent()) return null;
-        Seat s = maybe.get();
-        if (s.isReserved()) return null;
-        s.reserve(passengerName, passengerPhone);
-        return s;
+    public Koltuk koltukRezerveEt(int koltukNumarasi, String yolcuAdi, String yolcuTelefonu) {
+        Optional<Koltuk> belki = getKoltuk(koltukNumarasi);
+        if (!belki.isPresent()) return null;
+        Koltuk k = belki.get();
+        if (k.isRezerveEdildi()) return null;
+        k.rezerveEt(yolcuAdi, yolcuTelefonu);
+        return k;
     }
 }
 
 /* -----------------------------
-    Reservation System (Controller)
+    Rezervasyon Sistemi (Kontrolcü)
     ----------------------------- */
 
-class ReservationSystem {
-    private final Map<String, Trip> trips; // tripId -> Trip
-    private final Scanner scanner;
-    private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private final DateTimeFormatter prettyDtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+class RezervasyonSistemi {
+    private final Map<String, Sefer> seferler; // seferKimlik -> Sefer
+    private final Scanner tarayici;
+    private final DateTimeFormatter tarihFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private final DateTimeFormatter guzelTarihFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public ReservationSystem() {
-        this.trips = new LinkedHashMap<>();
-        this.scanner = new Scanner(System.in);
+    public RezervasyonSistemi() {
+        this.seferler = new LinkedHashMap<>();
+        this.tarayici = new Scanner(System.in);
     }
 
     // CLI ana döngüsü
-    public void runCLI() {
-        boolean running = true;
-        while (running) {
-            printMainMenu();
-            String choice = scanner.nextLine().trim();
-            switch (choice) {
-                case "1": createTripCLI(); break;
-                case "2": listTripsCLI(); break;
-                case "3": showTripDetailsCLI(); break;
-                case "4": reserveSeatCLI(); break;
-                case "5": cancelReservationCLI(); break;
-                case "6": showOccupancyCLI(); break;
-                case "7": listAllReservationsCLI(); break;
-                case "8": showSummaryCLI(); break;
+    public void cliCalistir() {
+        boolean calisiyor = true;
+        while (calisiyor) {
+            anaMenuyuYazdir();
+            String secim = tarayici.nextLine().trim();
+            switch (secim) {
+                case "1": seferOlusturCLI(); break;
+                case "2": seferleriListeleCLI(); break;
+                case "3": seferDetaylariGosterCLI(); break;
+                case "4": koltukRezerveEtCLI(); break;
+                case "5": rezervasyonIptalEtCLI(); break;
+                case "6": dolulukGosterCLI(); break;
+                case "7": tumRezervasyonlariListeleCLI(); break;
+                case "8": ozetGosterCLI(); break;
                 case "0":
                     System.out.println("Çıkılıyor. İyi günler! 👋");
-                    running = false;
+                    calisiyor = false;
                     break;
                 default:
                     System.out.println("Geçersiz seçim. Tekrar deneyin.");
@@ -189,13 +187,13 @@ class ReservationSystem {
         }
     }
 
-    private void printMainMenu() {
+    private void anaMenuyuYazdir() {
         System.out.println("=== Otobüs Rezervasyon Simülasyonu ===");
         System.out.println("1) Yeni sefer oluştur");
         System.out.println("2) Seferleri listele");
         System.out.println("3) Sefer detaylarını göster");
         System.out.println("4) Koltuk rezervasyonu yap");
-        System.out.println("5) Rezervasyon iptal et (Rezervation ID ile)");
+        System.out.println("5) Rezervasyon iptal et (Rezervasyon ID ile)");
         System.out.println("6) Doluluk durumunu göster");
         System.out.println("7) Tüm rezervasyonları listele");
         System.out.println("8) Rapor: Toplam sefer sayısı ve gelir");
@@ -205,37 +203,37 @@ class ReservationSystem {
 
     /* ---------- CLI İşlevleri ---------- */
 
-    private void createTripCLI() {
+    private void seferOlusturCLI() {
         System.out.println("--- Yeni Sefer Oluştur ---");
         System.out.print("Sefer ID (örnek: SFR1001): ");
-        String id = scanner.nextLine().trim();
-        if (id.isEmpty() || trips.containsKey(id)) {
+        String kimlik = tarayici.nextLine().trim();
+        if (kimlik.isEmpty() || seferler.containsKey(kimlik)) {
             System.out.println("Geçersiz veya mevcut ID.");
             return;
         }
         System.out.print("Kalkış yeri: ");
-        String origin = scanner.nextLine().trim();
+        String kalkis = tarayici.nextLine().trim();
         System.out.print("Varış yeri: ");
-        String dest = scanner.nextLine().trim();
+        String varis = tarayici.nextLine().trim();
         System.out.print("Kalkış tarihi-saat (YYYY-MM-DD HH:mm): ");
-        String dtStr = scanner.nextLine().trim();
-        LocalDateTime dt;
+        String tarihStr = tarayici.nextLine().trim();
+        LocalDateTime tarih;
         try {
-            dt = LocalDateTime.parse(dtStr, dtf);
+            tarih = LocalDateTime.parse(tarihStr, tarihFormat);
         } catch (Exception e) {
             System.out.println("Tarih formatı hatalı. Örnek: 2025-11-01 13:30");
             return;
         }
 
         // Kapasite 10 olarak sabitlendi.
-        int cap = 10;
-        System.out.println("Kapasite: " + cap + " (Otobüs kapasitesi 10 olarak sabitlenmiştir.)");
+        int kap = 10;
+        System.out.println("Kapasite: " + kap + " (Otobüs kapasitesi 10 olarak sabitlenmiştir.)");
 
         System.out.print("Bilet Fiyatı (TL): ");
-        int price;
+        int fiyat;
         try {
-            price = Integer.parseInt(scanner.nextLine().trim());
-            if (price <= 0) {
+            fiyat = Integer.parseInt(tarayici.nextLine().trim());
+            if (fiyat <= 0) {
                 System.out.println("Bilet fiyatı pozitif olmalı.");
                 return;
             }
@@ -244,175 +242,174 @@ class ReservationSystem {
             return;
         }
 
-        // Fiyat parametresi Trip constructor'ına eklendi
-        Trip t = new Trip(id, origin, dest, dt, cap, price);
-        trips.put(id, t);
-        System.out.println("✅ Sefer oluşturuldu: " + id);
+        Sefer s = new Sefer(kimlik, kalkis, varis, tarih, kap, fiyat);
+        seferler.put(kimlik, s);
+        System.out.println("✅ Sefer oluşturuldu: " + kimlik);
     }
 
-    private void listTripsCLI() {
-        if (trips.isEmpty()) {
+    private void seferleriListeleCLI() {
+        if (seferler.isEmpty()) {
             System.out.println("Henüz sefer yok.");
             return;
         }
         System.out.println("--- Seferler ---");
-        for (Trip t : trips.values()) {
-            System.out.printf("%s | %s -> %s | Kalkış: %s | Kap: %d | Dolu: %d | Doluluk: %4.1f%% | Fiyat: %d TL\n",
-                    t.getTripId(), t.getOrigin(), t.getDestination(),
-                    t.getDepartTime().format(prettyDtf),
-                    t.getCapacity(),
-                    t.getReservedSeats().size(),
-                    t.getOccupancyRate(),
-                    t.getTicketPrice()); // Farklı fiyatlar burada görünüyor
+        for (Sefer s : seferler.values()) {
+            System.out.printf("%s | %s → %s | Kalkış: %s | Kap: %d | Dolu: %d | Doluluk: %4.1f%% | Fiyat: %d TL\n",
+                    s.getSeferKimlik(), s.getKalkisYeri(), s.getVarisYeri(),
+                    s.getKalkisZamani().format(guzelTarihFormat),
+                    s.getKapasite(),
+                    s.getRezerveKoltuklar().size(),
+                    s.getDolulukOrani(),
+                    s.getBiletFiyati());
         }
     }
 
-    private void showTripDetailsCLI() {
+    private void seferDetaylariGosterCLI() {
         System.out.print("Sefer ID: ");
-        String id = scanner.nextLine().trim();
-        Trip t = trips.get(id);
-        if (t == null) {
+        String kimlik = tarayici.nextLine().trim();
+        Sefer s = seferler.get(kimlik);
+        if (s == null) {
             System.out.println("Sefer bulunamadı.");
             return;
         }
-        System.out.printf("Sefer %s (%s → %s) - Bilet: %d TL\n", t.getTripId(), t.getOrigin(), t.getDestination(), t.getTicketPrice());
+        System.out.printf("Sefer %s (%s → %s) - Bilet: %d TL\n", s.getSeferKimlik(), s.getKalkisYeri(), s.getVarisYeri(), s.getBiletFiyati());
         System.out.printf("Kalkış: %s | Kapasite: %d | Doluluk: %d (%%%.2f)\n",
-                t.getDepartTime().format(prettyDtf),
-                t.getCapacity(),
-                t.getReservedSeats().size(),
-                t.getOccupancyRate());
+                s.getKalkisZamani().format(guzelTarihFormat),
+                s.getKapasite(),
+                s.getRezerveKoltuklar().size(),
+                s.getDolulukOrani());
         System.out.println("Koltuk listesi (No : Durum [RezID kısa] - Yolcu):");
-        for (Seat s : t.getAllSeats()) {
-            String status = s.isReserved() ? ("DOLU [" + shortRid(s.getReservationId()) + "] - " + s.getPassengerName()) : "BOŞ";
-            System.out.printf("%02d : %s\n", s.getSeatNumber(), status);
+        for (Koltuk k : s.getTumKoltuklar()) {
+            String durum = k.isRezerveEdildi() ? ("DOLU [" + kisaRezKimlik(k.getRezervasyonKimlik()) + "] - " + k.getYolcuAdi()) : "BOŞ";
+            System.out.printf("%02d : %s\n", k.getKoltukNumarasi(), durum);
         }
     }
 
-    private void reserveSeatCLI() {
+    private void koltukRezerveEtCLI() {
         System.out.print("Sefer ID: ");
-        String id = scanner.nextLine().trim();
-        Trip t = trips.get(id);
-        if (t == null) {
+        String kimlik = tarayici.nextLine().trim();
+        Sefer s = seferler.get(kimlik);
+        if (s == null) {
             System.out.println("Sefer bulunamadı.");
             return;
         }
-        System.out.printf("Sefer: %s (%s → %s) | Bilet Fiyatı: %d TL%n", t.getTripId(), t.getOrigin(), t.getDestination(), t.getTicketPrice());
-        System.out.print("Koltuk numarası (1.." + t.getCapacity() + "): ");
-        int seatNo;
+        System.out.printf("Sefer: %s (%s → %s) | Bilet Fiyatı: %d TL%n", s.getSeferKimlik(), s.getKalkisYeri(), s.getVarisYeri(), s.getBiletFiyati());
+        System.out.print("Koltuk numarası (1.." + s.getKapasite() + "): ");
+        int koltukNo;
         try {
-            seatNo = Integer.parseInt(scanner.nextLine().trim());
+            koltukNo = Integer.parseInt(tarayici.nextLine().trim());
         } catch (Exception e) {
             System.out.println("Geçersiz koltuk numarası.");
             return;
         }
         System.out.print("Yolcu adı: ");
-        String name = scanner.nextLine().trim();
+        String ad = tarayici.nextLine().trim();
         System.out.print("Telefon: ");
-        String phone = scanner.nextLine().trim();
+        String telefon = tarayici.nextLine().trim();
 
-        Seat seat = t.reserveSeatDirect(seatNo, name, phone);
-        if (seat == null) {
+        Koltuk koltuk = s.koltukRezerveEt(koltukNo, ad, telefon);
+        if (koltuk == null) {
             System.out.println("Rezervasyon başarısız (koltuk dolu veya numara hatalı).");
             return;
         }
-        System.out.println("✅ Rezervasyon tamamlandı! RezID: " + seat.getReservationId());
-        // Fiş (ticket) yazdır
-        printTicket(t, seat);
+        System.out.println("✅ Rezervasyon tamamlandı! RezID: " + koltuk.getRezervasyonKimlik());
+        // Fiş yazdır
+        fisYazdir(s, koltuk);
     }
 
-    private void cancelReservationCLI() {
+    private void rezervasyonIptalEtCLI() {
         System.out.print("Rezervasyon ID girin: ");
-        String rid = scanner.nextLine().trim();
-        boolean found = false;
-        for (Trip t : trips.values()) {
-            Optional<Seat> seatOpt = t.findSeatByReservationId(rid);
-            if (seatOpt.isPresent()) {
-                Seat s = seatOpt.get();
+        String rezKimlik = tarayici.nextLine().trim();
+        boolean bulundu = false;
+        for (Sefer s : seferler.values()) {
+            Optional<Koltuk> koltukOpt = s.rezervasyonKimlikIleKoltukBul(rezKimlik);
+            if (koltukOpt.isPresent()) {
+                Koltuk k = koltukOpt.get();
                 System.out.printf("İptal ediliyor: Sefer %s | Koltuk %d | Yolcu %s%n",
-                        t.getTripId(), s.getSeatNumber(), s.getPassengerName());
-                s.cancel();
+                        s.getSeferKimlik(), k.getKoltukNumarasi(), k.getYolcuAdi());
+                k.iptalEt();
                 System.out.println("✅ Rezervasyon iptal edildi.");
-                found = true;
+                bulundu = true;
                 break;
             }
         }
-        if (!found) System.out.println("❌ Rezervasyon ID bulunamadı.");
+        if (!bulundu) System.out.println("❌ Rezervasyon ID bulunamadı.");
     }
 
-    private void showOccupancyCLI() {
+    private void dolulukGosterCLI() {
         System.out.print("Sefer ID (tüm seferler için boş bırak): ");
-        String id = scanner.nextLine().trim();
+        String kimlik = tarayici.nextLine().trim();
         System.out.println("--- Doluluk Durumu ve Gelir ---");
-        if (id.isEmpty()) {
-            for (Trip t : trips.values()) {
+        if (kimlik.isEmpty()) {
+            for (Sefer s : seferler.values()) {
                 System.out.printf("%s | %s → %s | Fiyat: %d TL | Doluluk: %d/%d (%%%.2f) | Tahmini Gelir: %d TL%n",
-                        t.getTripId(), t.getOrigin(), t.getDestination(), t.getTicketPrice(),
-                        t.getReservedSeats().size(), t.getCapacity(),
-                        t.getOccupancyRate(),
-                        t.getReservedSeats().size() * t.getTicketPrice());
+                        s.getSeferKimlik(), s.getKalkisYeri(), s.getVarisYeri(), s.getBiletFiyati(),
+                        s.getRezerveKoltuklar().size(), s.getKapasite(),
+                        s.getDolulukOrani(),
+                        s.getRezerveKoltuklar().size() * s.getBiletFiyati());
             }
             return;
         }
-        Trip t = trips.get(id);
-        if (t == null) {
+        Sefer s = seferler.get(kimlik);
+        if (s == null) {
             System.out.println("Sefer bulunamadı.");
             return;
         }
         System.out.printf("Sefer %s | Fiyat: %d TL | Doluluk: %d/%d (%%%.2f) | Tahmini Gelir: %d TL%n",
-                t.getTripId(), t.getTicketPrice(),
-                t.getReservedSeats().size(),
-                t.getCapacity(),
-                t.getOccupancyRate(),
-                t.getReservedSeats().size() * t.getTicketPrice());
-        System.out.println("Boş koltuklar: " + formatSeatList(t.getAvailableSeats()));
-        System.out.println("Dolu koltuklar: " + formatSeatList(t.getReservedSeats()));
+                s.getSeferKimlik(), s.getBiletFiyati(),
+                s.getRezerveKoltuklar().size(),
+                s.getKapasite(),
+                s.getDolulukOrani(),
+                s.getRezerveKoltuklar().size() * s.getBiletFiyati());
+        System.out.println("Boş koltuklar: " + koltukListesiFormatla(s.getBosKoltuklar()));
+        System.out.println("Dolu koltuklar: " + koltukListesiFormatla(s.getRezerveKoltuklar()));
     }
 
-    private void listAllReservationsCLI() {
-        boolean any = false;
+    private void tumRezervasyonlariListeleCLI() {
+        boolean varMi = false;
         System.out.println("--- Tüm Rezervasyonlar ---");
-        for (Trip t : trips.values()) {
-            for (Seat s : t.getReservedSeats()) {
-                any = true;
+        for (Sefer s : seferler.values()) {
+            for (Koltuk k : s.getRezerveKoltuklar()) {
+                varMi = true;
                 System.out.printf("Sefer %s | Koltuk %02d | Fiyat: %d TL | RezID: %s | Yolcu: %s | Tel: %s | Zaman: %s%n",
-                        t.getTripId(), s.getSeatNumber(), t.getTicketPrice(),
-                        s.getReservationId(),
-                        s.getPassengerName(),
-                        s.getPassengerPhone() == null ? "(bilgi yok)" : s.getPassengerPhone(),
-                        s.getReservationTime() == null ? "(bilgi yok)" : s.getReservationTime().format(prettyDtf));
+                        s.getSeferKimlik(), k.getKoltukNumarasi(), s.getBiletFiyati(),
+                        k.getRezervasyonKimlik(),
+                        k.getYolcuAdi(),
+                        k.getYolcuTelefonu() == null ? "(bilgi yok)" : k.getYolcuTelefonu(),
+                        k.getRezervasyonZamani() == null ? "(bilgi yok)" : k.getRezervasyonZamani().format(guzelTarihFormat));
             }
         }
-        if (!any) System.out.println("Hiç rezervasyon yok.");
+        if (!varMi) System.out.println("Hiç rezervasyon yok.");
     }
 
-    private void showSummaryCLI() {
-        int tripCount = trips.size();
-        int totalRevenue = calculateTotalRevenue();
+    private void ozetGosterCLI() {
+        int seferSayisi = seferler.size();
+        int toplamGelir = toplamGeliriHesapla();
         System.out.println("=== RAPOR ===");
-        System.out.println("Toplam Sefer Sayısı: " + tripCount);
-        System.out.println("Toplam Gelir: " + totalRevenue + " TL");
+        System.out.println("Toplam Sefer Sayısı: " + seferSayisi);
+        System.out.println("Toplam Gelir: " + toplamGelir + " TL");
         System.out.println("Sefer Bazlı Detaylar:");
-        for (Trip t : trips.values()) {
+        for (Sefer s : seferler.values()) {
             System.out.printf("%s | %s → %s | Fiyat: %d TL | Rezerve: %d | Kap: %d | Doluluk: %4.1f%% | Gelir: %d TL%n",
-                    t.getTripId(), t.getOrigin(), t.getDestination(), t.getTicketPrice(),
-                    t.getReservedSeats().size(), t.getCapacity(),
-                    t.getOccupancyRate(),
-                    t.getReservedSeats().size() * t.getTicketPrice());
+                    s.getSeferKimlik(), s.getKalkisYeri(), s.getVarisYeri(), s.getBiletFiyati(),
+                    s.getRezerveKoltuklar().size(), s.getKapasite(),
+                    s.getDolulukOrani(),
+                    s.getRezerveKoltuklar().size() * s.getBiletFiyati());
         }
     }
 
     /* ---------- Yardımcı metotlar ---------- */
 
-    private String shortRid(String rid) {
-        if (rid == null) return "(yok)";
-        return rid.length() <= 8 ? rid : rid.substring(0, 8);
+    private String kisaRezKimlik(String rezKimlik) {
+        if (rezKimlik == null) return "(yok)";
+        return rezKimlik.length() <= 8 ? rezKimlik : rezKimlik.substring(0, 8);
     }
 
-    private String formatSeatList(List<Seat> seats) {
-        if (seats.isEmpty()) return "(yok)";
+    private String koltukListesiFormatla(List<Koltuk> koltuklar) {
+        if (koltuklar.isEmpty()) return "(yok)";
         StringBuilder sb = new StringBuilder();
-        for (Seat s : seats) {
-            sb.append(s.getSeatNumber()).append(", ");
+        for (Koltuk k : koltuklar) {
+            sb.append(k.getKoltukNumarasi()).append(", ");
         }
         if (sb.length() >= 2) sb.setLength(sb.length() - 2);
         return sb.toString();
@@ -421,19 +418,19 @@ class ReservationSystem {
     /**
      * Konsola bilet fişi yazar (zengin, okunaklı format).
      */
-    private void printTicket(Trip t, Seat s) {
+    private void fisYazdir(Sefer s, Koltuk k) {
         System.out.println("\n=====================================");
         System.out.println("           BİLET FİŞİ / TICKET       ");
         System.out.println("=====================================");
-        System.out.printf("Rezervasyon ID : %s%n", s.getReservationId());
-        System.out.printf("Yolcu          : %s%n", s.getPassengerName());
-        System.out.printf("Telefon        : %s%n", s.getPassengerPhone() == null ? "(yok)" : s.getPassengerPhone());
-        System.out.printf("Sefer ID       : %s%n", t.getTripId());
-        System.out.printf("Güzergah       : %s → %s%n", t.getOrigin(), t.getDestination());
-        System.out.printf("Kalkış         : %s%n", t.getDepartTime().format(prettyDtf));
-        System.out.printf("Koltuk No      : %02d%n", s.getSeatNumber());
-        System.out.printf("Bilet Fiyatı   : %d TL%n", t.getTicketPrice()); // Farklı fiyatı gösterir
-        System.out.printf("Rezervasyon Zamanı: %s%n", s.getReservationTime() == null ? "(bilgi yok)" : s.getReservationTime().format(prettyDtf));
+        System.out.printf("Rezervasyon ID : %s%n", k.getRezervasyonKimlik());
+        System.out.printf("Yolcu          : %s%n", k.getYolcuAdi());
+        System.out.printf("Telefon        : %s%n", k.getYolcuTelefonu() == null ? "(yok)" : k.getYolcuTelefonu());
+        System.out.printf("Sefer ID       : %s%n", s.getSeferKimlik());
+        System.out.printf("Güzergah       : %s → %s%n", s.getKalkisYeri(), s.getVarisYeri());
+        System.out.printf("Kalkış         : %s%n", s.getKalkisZamani().format(guzelTarihFormat));
+        System.out.printf("Koltuk No      : %02d%n", k.getKoltukNumarasi());
+        System.out.printf("Bilet Fiyatı   : %d TL%n", s.getBiletFiyati());
+        System.out.printf("Rezervasyon Zamanı: %s%n", k.getRezervasyonZamani() == null ? "(bilgi yok)" : k.getRezervasyonZamani().format(guzelTarihFormat));
         System.out.println("-------------------------------------");
         System.out.println("NOT: Rezervasyon ID'nizi saklayınız. İptal için bu ID gereklidir.");
         System.out.println("=====================================\n");
@@ -442,104 +439,100 @@ class ReservationSystem {
     /**
      * Toplam geliri hesapla (tüm seferler)
      */
-    private int calculateTotalRevenue() {
-        int total = 0;
-        for (Trip t : trips.values()) {
-            total += t.getReservedSeats().size() * t.getTicketPrice();
+    private int toplamGeliriHesapla() {
+        int toplam = 0;
+        for (Sefer s : seferler.values()) {
+            toplam += s.getRezerveKoltuklar().size() * s.getBiletFiyati();
         }
-        return total;
+        return toplam;
     }
 
     /**
      * Toplam rezerve koltuk sayısını hesaplar.
      */
-    private int calculateTotalReservations() {
-        int total = 0;
-        for (Trip t : trips.values()) {
-            total += t.getReservedSeats().size();
+    private int toplamRezervasyonlariHesapla() {
+        int toplam = 0;
+        for (Sefer s : seferler.values()) {
+            toplam += s.getRezerveKoltuklar().size();
         }
-        return total;
+        return toplam;
     }
 
     /* ---------- Örnek/seed verisi oluşturma ---------- */
 
-    // örnek seferler ve rezervasyonlar ekle: 5 sefer, 10 yolcu, her biri için rezervasyon + fiş
-    public void seedSampleData() {
+    public void ornekVerileriYukle() {
         // Otobüs kapasitesi 10 olarak sabitlendi.
-        final int CAPACITY = 10;
+        final int KAPASITE = 10;
 
         // 1) Seferleri oluştur (kapasite 10, her birinin fiyatı farklı)
-        Trip s1 = new Trip("SFR1001", "İstanbul", "Ankara",
-                LocalDateTime.now().plusDays(2).withHour(9).withMinute(0), CAPACITY, 550); // Fiyat: 550 TL
+        Sefer s1 = new Sefer("SFR1001", "İstanbul", "Ankara",
+                LocalDateTime.now().plusDays(2).withHour(9).withMinute(0), KAPASITE, 550);
 
-        Trip s2 = new Trip("SFR1002", "İzmir", "Bursa",
-                LocalDateTime.now().plusDays(1).withHour(14).withMinute(0), CAPACITY, 450); // Fiyat: 450 TL
+        Sefer s2 = new Sefer("SFR1002", "İzmir", "Bursa",
+                LocalDateTime.now().plusDays(1).withHour(14).withMinute(0), KAPASITE, 450);
 
-        Trip s3 = new Trip("SFR1003", "Antalya", "Konya",
-                LocalDateTime.now().plusDays(3).withHour(10).withMinute(30), CAPACITY, 380); // Fiyat: 380 TL
+        Sefer s3 = new Sefer("SFR1003", "Antalya", "Konya",
+                LocalDateTime.now().plusDays(3).withHour(10).withMinute(30), KAPASITE, 380);
 
-        Trip s4 = new Trip("SFR1004", "Kırklareli", "İstanbul",
-                LocalDateTime.now().plusDays(1).withHour(8).withMinute(15), CAPACITY, 290); // Fiyat: 290 TL
+        Sefer s4 = new Sefer("SFR1004", "Kırklareli", "İstanbul",
+                LocalDateTime.now().plusDays(1).withHour(8).withMinute(15), KAPASITE, 290);
 
-        Trip s5 = new Trip("SFR1005", "Trabzon", "Samsun",
-                LocalDateTime.now().plusDays(2).withHour(7).withMinute(45), CAPACITY, 420); // Fiyat: 420 TL
+        Sefer s5 = new Sefer("SFR1005", "Trabzon", "Samsun",
+                LocalDateTime.now().plusDays(2).withHour(7).withMinute(45), KAPASITE, 420);
 
         // Map'e ekle
-        trips.put(s1.getTripId(), s1);
-        trips.put(s2.getTripId(), s2);
-        trips.put(s3.getTripId(), s3);
-        trips.put(s4.getTripId(), s4);
-        trips.put(s5.getTripId(), s5);
+        seferler.put(s1.getSeferKimlik(), s1);
+        seferler.put(s2.getSeferKimlik(), s2);
+        seferler.put(s3.getSeferKimlik(), s3);
+        seferler.put(s4.getSeferKimlik(), s4);
+        seferler.put(s5.getSeferKimlik(), s5);
 
         // 2) Yolcular (10 kişi)
-        String[] passengers = {
+        String[] yolcular = {
                 "Ali Yılmaz", "Zeynep Demir", "Ahmet Kaya", "Ece Yalçın", "Mehmet Aksoy",
                 "Furkan Çelik", "Selin Öztürk", "Caner Yücel", "Deniz Şahin", "Gizem Kılıç"
         };
-        String[] phones = {
+        String[] telefonlar = {
                 "05330001111", "05330002222", "05330003333", "05330004444", "05330005555",
                 "05330006666", "05330007777", "05330008888", "05330009999", "05330000000"
         };
 
-        // 3) Rezervasyonlar (seed): Toplam 10 rezervasyon (her yolcuya bir koltuk)
+        // 3) Rezervasyonlar: Toplam 10 rezervasyon (her yolcuya bir koltuk)
         // Sefer 1 (İstanbul-Ankara): 3 kişi rezerve
-        Seat r1_1 = s1.reserveSeatDirect(1, passengers[0], phones[0]); if (r1_1 != null) printTicket(s1, r1_1);
-        Seat r1_2 = s1.reserveSeatDirect(2, passengers[1], phones[1]); if (r1_2 != null) printTicket(s1, r1_2);
-        Seat r1_3 = s1.reserveSeatDirect(3, passengers[2], phones[2]); if (r1_3 != null) printTicket(s1, r1_3);
+        Koltuk r1_1 = s1.koltukRezerveEt(1, yolcular[0], telefonlar[0]); if (r1_1 != null) fisYazdir(s1, r1_1);
+        Koltuk r1_2 = s1.koltukRezerveEt(2, yolcular[1], telefonlar[1]); if (r1_2 != null) fisYazdir(s1, r1_2);
+        Koltuk r1_3 = s1.koltukRezerveEt(3, yolcular[2], telefonlar[2]); if (r1_3 != null) fisYazdir(s1, r1_3);
 
         // Sefer 2 (İzmir-Bursa): 2 kişi rezerve
-        Seat r2_1 = s2.reserveSeatDirect(5, passengers[3], phones[3]); if (r2_1 != null) printTicket(s2, r2_1);
-        Seat r2_2 = s2.reserveSeatDirect(6, passengers[4], phones[4]); if (r2_2 != null) printTicket(s2, r2_2);
+        Koltuk r2_1 = s2.koltukRezerveEt(5, yolcular[3], telefonlar[3]); if (r2_1 != null) fisYazdir(s2, r2_1);
+        Koltuk r2_2 = s2.koltukRezerveEt(6, yolcular[4], telefonlar[4]); if (r2_2 != null) fisYazdir(s2, r2_2);
 
         // Sefer 3 (Antalya-Konya): 2 kişi rezerve
-        Seat r3_1 = s3.reserveSeatDirect(1, passengers[5], phones[5]); if (r3_1 != null) printTicket(s3, r3_1);
-        Seat r3_2 = s3.reserveSeatDirect(2, passengers[6], phones[6]); if (r3_2 != null) printTicket(s3, r3_2);
+        Koltuk r3_1 = s3.koltukRezerveEt(1, yolcular[5], telefonlar[5]); if (r3_1 != null) fisYazdir(s3, r3_1);
+        Koltuk r3_2 = s3.koltukRezerveEt(2, yolcular[6], telefonlar[6]); if (r3_2 != null) fisYazdir(s3, r3_2);
 
         // Sefer 4 (Kırklareli-İstanbul): 2 kişi rezerve
-        Seat r4_1 = s4.reserveSeatDirect(3, passengers[7], phones[7]); if (r4_1 != null) printTicket(s4, r4_1);
-        Seat r4_2 = s4.reserveSeatDirect(4, passengers[8], phones[8]); if (r4_2 != null) printTicket(s4, r4_2);
+        Koltuk r4_1 = s4.koltukRezerveEt(3, yolcular[7], telefonlar[7]); if (r4_1 != null) fisYazdir(s4, r4_1);
+        Koltuk r4_2 = s4.koltukRezerveEt(4, yolcular[8], telefonlar[8]); if (r4_2 != null) fisYazdir(s4, r4_2);
 
         // Sefer 5 (Trabzon-Samsun): 1 kişi rezerve
-        Seat r5_1 = s5.reserveSeatDirect(10, passengers[9], phones[9]); if (r5_1 != null) printTicket(s5, r5_1);
-
+        Koltuk r5_1 = s5.koltukRezerveEt(10, yolcular[9], telefonlar[9]); if (r5_1 != null) fisYazdir(s5, r5_1);
 
         // 4) Başlangıç raporu: toplam sefer sayısı, sefer bazlı doluluk ve gelir
-        System.out.println("\n----------------- Başlangıç (Seed) Raporu -----------------");
-        System.out.println("Toplam sefer sayısı: " + trips.size());
+        System.out.println("\n----------------- Başlangıç (Örnek Veri) Raporu -----------------");
+        System.out.println("Toplam sefer sayısı: " + seferler.size());
+        System.out.println("Toplam yolcu sayısı (örnek veri): " + toplamRezervasyonlariHesapla());
 
-        // HATA VEREN SATIR DÜZELTİLDİ: calculateTotalReservations metodu ile güvenli toplama yapılıyor.
-        System.out.println("Toplam yolcu sayısı (seed): " + calculateTotalReservations());
-
-        int totalRevenue = calculateTotalRevenue();
-        System.out.println("Toplam gelir (seed): " + totalRevenue + " TL");
+        int toplamGelir = toplamGeliriHesapla();
+        System.out.println("Toplam gelir (örnek veri): " + toplamGelir + " TL");
         System.out.println("Sefer detayları:");
-        for (Trip t : trips.values()) {
+        for (Sefer s : seferler.values()) {
             System.out.printf("%s | %s → %s | Fiyat: %d TL | Rezerve: %d | Kap: %d | Doluluk: %4.1f%% | Gelir: %d TL%n",
-                    t.getTripId(), t.getOrigin(), t.getDestination(), t.getTicketPrice(),
-                    t.getReservedSeats().size(), t.getCapacity(),
-                    t.getOccupancyRate(),
-                    t.getReservedSeats().size() * t.getTicketPrice());
+                    s.getSeferKimlik(), s.getKalkisYeri(), s.getVarisYeri(), s.getBiletFiyati(),
+                    s.getRezerveKoltuklar().size(), s.getKapasite(),
+                    s.getDolulukOrani(),
+                    s.getRezerveKoltuklar().size() * s.getBiletFiyati());
         }
-        System.out.println("-----------------------------------------------------------\n");
+        System.out.println("-------------------------------------------------------------------\n");
     }
 }
